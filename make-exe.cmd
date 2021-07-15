@@ -1,0 +1,1 @@
+pyinstaller --noconfirm --onefile --windowed --icon "D:/אלון/Projects/whatsapp-reader/whatsapp_icon-icons.com_62756.ico" --name "Whatsapp Cleaner" --add-data "D:/אלון/Projects/whatsapp-reader/chromedriver_win32;chromedriver_win32/"  "D:/אלון/Projects/whatsapp-reader/main.py"
