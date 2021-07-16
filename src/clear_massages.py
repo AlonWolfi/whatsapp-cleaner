@@ -61,4 +61,4 @@ def clear(driver):
         if allclear_counter > 5:
             finish_scrolling = True
         time.sleep(0.5)
-    time.sleep(60)
+    time.sleep(2)
