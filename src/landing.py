@@ -1,12 +1,7 @@
 import base64
 import time
 
-import dash_core_components as dcc
-import dash_html_components as html
 import matplotlib.image as mpimg
-import streamlit as st
-from dash_extensions.enrich import (Dash, FileSystemStore, Input, Output,
-                                    ServersideOutput, Trigger)
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 

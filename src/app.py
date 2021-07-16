@@ -3,28 +3,22 @@
 import time
 import warnings
 
-warnings.filterwarnings('ignore')
-
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
-import numpy as np
-import pandas as pd
-import plotly.express as px
-import streamlit as st
 from dash.dependencies import Input, Output
 from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
-from selenium.webdriver.remote.webdriver import WebDriver
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
 
-from clear_massages import clear
+from clear_massages import clear, is_clear
 from landing import is_landing_main, landing_get_image
 from taken import is_taken, log_out, refresh
-from utils import read_data, save_data
+
+warnings.filterwarnings('ignore')
+
+
+import platform
+from pathlib import Path
 
 main_style = {
     'background': '#FFFFFF',
@@ -59,14 +53,13 @@ def init_driver():
     # # op.add_argument('headless')
 
     # driver = webdriver.Chrome(chrome_driver_path)
+
+
     # driver.get(url)
-    import platform
-    print(platform.platform())
     
     options = FirefoxOptions()
     options.add_argument("--headless")
-    import platform
-    from pathlib import Path
+    print(platform.platform())
     if 'indow' in platform.system():
             driver = webdriver.Firefox(executable_path = str(Path('drivers') / 'geckodriver-v0.29.1-win64' / 'geckodriver.exe'), options=options)#, chrome_options=op)
     else:
@@ -95,6 +88,7 @@ app.layout = html.Div(
     children=[
         html.Div(id='dummy-output', style={'display':'none'}),
         dcc.Interval(id='interval', interval=2000),
+        dcc.Interval(id='clear-interval', interval=30000),
         html.H1('Whatsapp Cleaner'),
         html.Div(
             id = 'main',
@@ -116,6 +110,12 @@ def interval_update(n_intervals):
     else:
         return html.Button('Clean', id='clean-button')
 
+@app.callback(Output('dummy-output', 'children'), Input('clear-interval', 'n_intervals'))
+def interval_update(n_intervals):
+    if not is_landing_main(driver) and not is_taken(driver) and not is_clear():
+        clear(driver)
+    return ''
+
 @app.callback(Output('refresh-button', 'style'), Input('refresh-button', 'n_clicks'), prevent_initial_call=True)
 def refresh_button(n_clicks):
     refresh(driver)
@@ -130,7 +130,8 @@ def signout_button(n_clicks):
 
 @app.callback(Output('clean-button', 'style'), Input('clean-button', 'n_clicks'), prevent_initial_call=True)
 def clean_button(n_clicks):
-    clear(driver)
+    if(not is_clear()):
+        clear(driver)
     dash.exceptions.PreventUpdate("")
     return {}
 
@@ -208,5 +209,5 @@ def clean_button(n_clicks):
 
 # Run the app
 if __name__ == '__main__':
-    app.run_server()
+    app.run_server(host='0.0.0.0', port = 8050)
 

@@ -1,11 +1,14 @@
 import time
 
-from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
+CLEAR = False
+
+def is_clear():
+    global CLEAR
+    return CLEAR
 
 def get_pane_side(driver, seconds_to_wait = 50):
     pane_side = WebDriverWait(driver, seconds_to_wait).until(
@@ -43,7 +46,8 @@ def scroll_chats(driver, pane_side, step_size = 500):
  
 
 def clear(driver):
-
+    global CLEAR
+    CLEAR = True
     pane_side = get_pane_side(driver, 10)
     finish_scrolling = False
     allclear_counter = 0
@@ -62,3 +66,4 @@ def clear(driver):
             finish_scrolling = True
         time.sleep(0.5)
     time.sleep(2)
+    CLEAR = False
