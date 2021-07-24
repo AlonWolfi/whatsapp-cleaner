@@ -5,7 +5,7 @@ from pathlib import Path
 PROJECT_DIR = Path(__file__).resolve().parents[1]
 DATA_DIR = PROJECT_DIR / 'data'
 SRC_DIR = PROJECT_DIR / 'src'
-ASSETS_DIR = PROJECT_DIR / 'src' / 'assets'
+DRIVERS_DIR = PROJECT_DIR / 'drivers'
 TMP_DIR = DATA_DIR / 'tmp'
 
 

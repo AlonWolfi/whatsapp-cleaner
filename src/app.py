@@ -15,10 +15,15 @@ from landing import is_landing_main, landing_get_image
 from taken import is_taken, log_out, refresh
 
 warnings.filterwarnings('ignore')
-
-
 import platform
 from pathlib import Path
+
+import dash
+import dash_core_components as dcc
+import dash_html_components as html
+from dash.dependencies import Input, Output
+from flask import Flask
+from flask_restful import Api, Resource
 
 main_style = {
     'background': '#FFFFFF',
@@ -40,34 +45,33 @@ dropdown_style = {
 }
 
 
-def init_driver():
+def init_driver(url = 'https://web.whatsapp.com/', explorer: str = 'firefox'):
     # try:
     #     driver
     #     return driver
     # except:
     #     pass
-    url = 'https://web.whatsapp.com/'
 
-    # chrome_driver_path = 'chromedriver_win32/chromedriver.exe'
-    # op = webdriver.ChromeOptions()
-    # # op.add_argument('headless')
+    if explorer == 'chrome':
+        chrome_driver_path = 'chromedriver_win32/chromedriver.exe'
+        op = webdriver.ChromeOptions()
+        op.add_argument('headless')
 
-    # driver = webdriver.Chrome(chrome_driver_path)
-
-
-    # driver.get(url)
+        driver = webdriver.Chrome(chrome_driver_path)
     
-    options = FirefoxOptions()
-    options.add_argument("--headless")
-    print(platform.platform())
-    if 'indow' in platform.system():
-            driver = webdriver.Firefox(executable_path = str(Path('drivers') / 'geckodriver-v0.29.1-win64' / 'geckodriver.exe'), options=options)#, chrome_options=op)
-    else:
-        try:
-            driver = webdriver.Firefox(executable_path = str(Path('drivers') / 'geckodriver-v0.29.1-linux32' / 'geckodriver'), options=options)#, chrome_options=op)
-        except:
-            driver = webdriver.Firefox(executable_path = str(Path('drivers') / 'geckodriver-v0.29.1-linux64' / 'geckodriver'), options=options)#, chrome_options=op)
-    
+    if explorer == 'firefox':
+
+        options = FirefoxOptions()
+        options.add_argument("--headless")
+        print(platform.system())
+        if 'indow' in platform.system():
+                driver = webdriver.Firefox(executable_path = str(Path('drivers') / 'geckodriver-v0.29.1-win64' / 'geckodriver.exe'), options=options)#, chrome_options=op)
+        else:
+            try:
+                driver = webdriver.Firefox(executable_path = str(Path('drivers') / 'geckodriver-v0.29.1-linux32' / 'geckodriver'), options=options)#, chrome_options=op)
+            except:
+                driver = webdriver.Firefox(executable_path = str(Path('drivers') / 'geckodriver-v0.29.1-linux64' / 'geckodriver'), options=options)#, chrome_options=op)
+        
     driver.get(url)
 
     time.sleep(5)
@@ -79,8 +83,18 @@ def init_driver():
 
 
 # Initialise the app
-app = dash.Dash(__name__)
+server = Flask(__name__)
+app = dash.Dash(server=server)
+api = Api(server)
+
 driver = init_driver()
+class ClearAPI(Resource):
+    def get(self):
+        if not is_landing_main(driver) and not is_taken(driver) and not is_clear():
+            clear(driver)
+        return {}
+
+api.add_resource(ClearAPI, '/clear')
 
 
 app.layout = html.Div(
@@ -135,77 +149,6 @@ def clean_button(n_clicks):
     dash.exceptions.PreventUpdate("")
     return {}
 
-
-
-# app.layout = html.Div(
-#     ## Step 1: Define App Style
-#     style={
-#         'backgroundColor': main_style['background'],
-#         'font-family': main_style['font-family']
-#     },
-#     children=[
-#         html.H1(
-#             children='Total Sales by Country',
-#             style={
-#                 'backgroundColor': title_style['background'],
-#                 'color': title_style['text'],
-#                 'textAlign': 'center'}
-#         ),
-#         html.Div(
-#             children='This graph allows you to compare the total sales amount and campaign influence by country.',
-#             style={
-#                 'backgroundColor': desc_style['background'],
-#                 'color': desc_style['text'],
-#                 'textAlign': 'center'}
-#         ),
-#         html.Div(
-#             id = 'main'
-#         ),
-#         html.Label(
-#             children='Select countries:'
-#         ),
-#         dcc.Dropdown(
-#             id='country-dropdown',
-#             style={'color': dropdown_style['text']},
-#             options=[{'label': i, 'value': i} for i in sorted(df.country.unique())],
-#             # value=[i for i in sorted(df.country.unique())],
-#             multi=True
-#         )
-#     ]
-# )
-
-
-# @app.callback(Output(component_id='main', component_property='children'),
-#             [Input(component_id='country-dropdown', component_property='value')],
-#             prevent_initial_call=False
-#             )
-# def update_graph(input_value):
-#     if not input_value:
-#         input_value = []
-#     if len(input_value) > 0:
-#         updated_df = df[df['country'].isin(input_value)]
-#         fig = px.histogram(updated_df,
-#                         x="value",
-#                         color="country",
-#                         title="Sales by Country",
-#                         )
-#         return dcc.Graph(
-#             id='graph-output',
-#             figure = fig
-#         )
-#     elif len(input_value) == 0:
-#         return html.H2('הכנס!')
-#         # raise dash.exceptions.PreventUpdate
-
-# # Define the app
-# # app.layout = html.Div()
-# app.layout = html.Div(children=[
-#                       html.Div(className='row',  # Define the row element
-#                                children=[
-#                                   html.Div(className='four columns div-user-controls'),  # Define the left element
-#                                   html.Div(className='eight columns div-for-charts bg-grey')  # Define the right element
-#                                   ])
-#                                 ])
 
 # Run the app
 if __name__ == '__main__':
